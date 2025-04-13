@@ -7,11 +7,21 @@ datasource db {
   url      = env("DATABASE_URL")
 }
 
+// ===================
+// MODELS PRINCIPAUX
+// ===================
+
 model Admin {
   id        Int      @id @default(autoincrement())
   email     String   @unique
   password  String
   createdAt DateTime @default(now())
+}
+
+model Category {
+  id        Int       @id @default(autoincrement())
+  name      String    @unique
+  products  Product[]
 }
 
 model Product {
@@ -21,27 +31,30 @@ model Product {
   price       Float
   createdAt   DateTime    @default(now())
 
-  orderItems  OrderItem[] // Relational field to OrderItem
+  categoryId  Int
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+
+  orderItems  OrderItem[]
 }
 
 model Client {
   id        Int      @id @default(autoincrement())
   name      String
   email     String   @unique
-  phone     String?
+  phoneNumber String?
   createdAt DateTime @default(now())
 
-  orders    Order[] // Relational field to Order
+  orders    Order[]
 }
 
 model Order {
   id        Int        @id @default(autoincrement())
   clientId  Int
-  status    String     @default("pending") // pending, validated, cancelled
+  status    String     @default("pending") // Ex: pending, validated, cancelled
   createdAt DateTime   @default(now())
 
-  client    Client     @relation(fields: [clientId], references: [id])
-  items     OrderItem[] // Relational field to OrderItem
+  client    Client     @relation(fields: [clientId], references: [id], onDelete: Cascade)
+  items     OrderItem[]
 }
 
 model OrderItem {
@@ -50,6 +63,6 @@ model OrderItem {
   productId Int
   quantity  Int
 
-  order     Order    @relation(fields: [orderId], references: [id])
-  product   Product  @relation(fields: [productId], references: [id])
+  order     Order    @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product   Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
 }
